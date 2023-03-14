@@ -1,9 +1,7 @@
 import pystray
 from time import sleep
-from time import time
 from PIL import Image, ImageDraw
 from threading import Thread
-from subprocess import Popen
 import subprocess
 import json
 
