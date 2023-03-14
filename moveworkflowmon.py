@@ -11,19 +11,15 @@ import json
 def red_image():
     image = Image.new('RGB', (64, 64), 'red')
     dc = ImageDraw.Draw(image)
-    dc.rectangle((0,0,64,64), fill='red')
+    dc.rectangle((0, 0, 64, 64), fill='red')
     return image
 
 
 def green_image():
     image = Image.new('RGB', (64, 64), 'green')
     dc = ImageDraw.Draw(image)
-    dc.rectangle((0,0,64,64), fill='green')
+    dc.rectangle((0, 0, 64, 64), fill='green')
     return image
-
-
-def createicon():
-    icon.run()
 
 
 def get_output_from_cli():
@@ -32,9 +28,9 @@ def get_output_from_cli():
     workflow_show2 = (p.communicate())
     workflow_obj = json.loads(workflow_show2[0])
     shards = list(workflow_obj["ShardStatuses"].keys())
-    if len(shards_pos)==0:
+    if len(shards_pos) == 0:
         for every_shard in shards:
-            shards_pos[every_shard]=[]
+            shards_pos[every_shard] = []
         print(shards_pos)
     fail_bl = False
     global i
@@ -66,13 +62,14 @@ def check_gtids():
         if (len(list_pos)) >= 11:
             current_state  = list_pos[len(list_pos)-1]
             previous_state = list_pos[len(list_pos)-11]
-            the_diff = find_diff(current_state,previous_state)
+            the_diff = find_diff(current_state, previous_state)
             shard = get_short_shardname(every_shard)
-            status.append({shard:the_diff})
+            status.append({shard: the_diff})
             update_icon = True
     if update_icon:
-        printable_status = str(status).replace("[", "").replace("]", "").replace("{", "").replace("}", "").replace("'","")
-        icon.menu=pystray.Menu(
+        printable_status = str(status).replace("[", "").replace("]", "").replace("{", "")
+        printable_status = printable_status.replace("}", "").replace("'", "").replace(".0", "")
+        icon.menu = pystray.Menu(
                 pystray.MenuItem(
                     printable_status, None, enabled=False,
                 )
@@ -89,18 +86,16 @@ def find_diff(actual_list, db_list):
     if len(temp3) != 0:
         gtid_start_pos = str(temp3).rfind('-')
         new_gtid       = str(temp3)[gtid_start_pos+1:-2]
-        #print("new gtid", new_gtid)
         flag1 = True
     s2 = set(actual_list)
     temp4 = [x for x in db_list if x not in s2]
     if len(temp4) != 0:
         gtid_start_pos = str(temp4).rfind('-')
         old_gtid = str(temp4)[gtid_start_pos+1:-2]
-        #print("old gtid", old_gtid)
         flag2 = True
     if flag1 and flag2:
         try:
-            total_diff = round((int(new_gtid)-int(old_gtid))/60,0)
+            total_diff = round((int(new_gtid)-int(old_gtid))/60, 0)
         except ValueError:
             total_diff = "some err"
     else:
@@ -108,21 +103,20 @@ def find_diff(actual_list, db_list):
     return total_diff
 
 
-
 def task():
     global i
     while True:
         anyerrors = get_output_from_cli()
         if anyerrors:
-            icon.icon=red_image()
+            icon.icon = red_image()
         else:
-            icon.icon=green_image()
-        sleep(6)
-        if i%10==0:
+            icon.icon = green_image()
+        sleep(6)  # in seconds
+        if i % 10 == 0:
             print("=====")
             icon.visible = True
             check_gtids()
-        i+= 1
+        i += 1
 
 
 if __name__ == '__main__':
@@ -140,4 +134,3 @@ if __name__ == '__main__':
     workflow_checker_routine.start()
     icon_routine = Thread(target=icon.run())
     icon_routine.start()
-
