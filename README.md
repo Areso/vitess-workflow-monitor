@@ -1,5 +1,5 @@
 # Vitess-workflow-monitor  
-![demo.png](demo.png)
+![demo.png](demo.png)  
 Small application to track workflow status Linux/GNOME/GTK  
 Green icon shows replication in Copying/Running  
 Red icon shows replication in Error state  
