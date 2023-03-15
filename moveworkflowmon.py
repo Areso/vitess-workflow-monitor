@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw
 from threading import Thread
 import subprocess
 import json
+import argparse
 
 
 def red_image():
@@ -20,8 +21,9 @@ def green_image():
     return image
 
 
-def get_output_from_cli():
-    command = "vtctlclient --server 127.0.0.1:15999 Workflow user.move2vitess21 show"
+def get_output_from_cli(workflow_to_check=""):
+    command = "vtctlclient --server 127.0.0.1:15999 Workflow %arg1 show"
+    command = command.replace("%arg1", workflow_to_check)
     p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
     workflow_show2 = (p.communicate())
     workflow_obj = json.loads(workflow_show2[0])
@@ -101,10 +103,25 @@ def find_diff(actual_list, db_list):
     return total_diff
 
 
-def task():
+def routined_task(workflow):
+    if workflow is None:
+        command = "vtctlclient --server 127.0.0.1:15999 Workflow user listall"
+        p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        workflow_list_cli_return_bytes = p.communicate() # returns tuple, where second value is None
+        workflow_list_cli_return = workflow_list_cli_return_bytes[0].decode(encoding='utf8')
+        # Following workflow(s) found in keyspace user: move2vitess21
+        delimiter = ":"
+        list_start_pos     = workflow_list_cli_return.find(":")
+        keyspace_start_pos = workflow_list_cli_return.rfind(" ", 0, list_start_pos)
+        keyspace = workflow_list_cli_return[keyspace_start_pos+1:list_start_pos]
+        workflow_list_str = workflow_list_cli_return[list_start_pos+1:]
+        workflow_list_str = workflow_list_str.replace('\n', ' ').replace('\r', '')
+        workflow_list_str = workflow_list_str.replace(" ", "")
+        workflow_list = workflow_list_str.split(",")
+        workflow = keyspace+"."+workflow_list[0]
     global i
     while True:
-        anyerrors = get_output_from_cli()
+        anyerrors = get_output_from_cli(workflow)
         if anyerrors:
             icon.icon = red_image()
         else:
@@ -118,6 +135,10 @@ def task():
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--workflow", help="workflow name", type=str)
+    args = parser.parse_args()
+    workflow_name = args.workflow_name
     icon = pystray.Icon(
         name='Vitess Workflow Monitor',
         menu=pystray.Menu(
@@ -128,7 +149,8 @@ if __name__ == '__main__':
         icon=red_image())
     i = 0
     shards_pos = {}
-    workflow_checker_routine = Thread(target=task)
+    workflow_checker_routine = Thread(target=routined_task, args=[workflow_name])
     workflow_checker_routine.start()
     icon_routine = Thread(target=icon.run())
     icon_routine.start()
+
