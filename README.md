@@ -7,6 +7,9 @@ Also, by click, you could see TPS (transaction per second) rate of applying binl
 Show stats in `shard: TPS` format.  
 ## Install requirements
 `sudo pip3 install -r requirements.txt`  
+also, on Ubuntu with GNOME, you probably will need appindicator.  
+`sudo apt install gir1.2-appindicator3-0.1`  
+in case of Arch your package would be named `libappindicator-gtk3`
 ## To start:  
 `python3 moveworkflowmon.py`  
 or  
