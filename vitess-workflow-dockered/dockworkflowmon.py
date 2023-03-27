@@ -149,16 +149,23 @@ def find_vtctl():
     return vtctl_host
 
 
-if __name__ == '__main__':
-    #workflow_name = args.workflow
+
+
+if __name__ == "__main__":
+    # if __name__ == '__main__':
+    # workflow_name = args.workflow
     i = 0
     shards_pos = {}
     vtctl_host = find_vtctl()
     workflow_checker_routine = Thread(target=routined_task,
-                                      args=[None,vtctl_host])
+                                      args=[None, vtctl_host])
     workflow_checker_routine.start()
+    app.run(host='0.0.0.0', port=5000)
 
 
 @app.route("/metrics")
 def metrics():
-    return 0
+    global shards_states
+    global shards_tps
+    return shards_states+shards_tps
+

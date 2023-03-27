@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vitess-workflow-monitor
+spec:
+  containers:
+  - name: vitess-workflow-monitor
+    image: aresox/vitess_workflow_monitor:0.4
+    # Just spin & wait forever
+    command: [ "/bin/bash", "-c", "--" ]
+    # update repos, update installed things, install things, finally - run endless loop
+    args: [ "apt update",
+            "apt upgrade",
+            "export FLASK_APP=app/dockworkflowmon.py",
+            "python3 app/dockworkflowmon.py" ]
