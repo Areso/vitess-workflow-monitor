@@ -23,12 +23,16 @@ def get_short_shardname(shard):
 
 
 def get_output_from_cli(workflow_to_check, ctl_host):
-    command = "vtctlclient --server %vtctlhost:15999 Workflow %arg1 show"
-    command = command.replace("%arg1", workflow_to_check)
-    command = command.replace("%vtctlhost", ctl_host)
-    p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-    workflow_show2 = (p.communicate())
-    workflow_obj = json.loads(workflow_show2[0])
+    try:
+        command = "vtctlclient --server %vtctlhost:15999 Workflow %arg1 show"
+        command = command.replace("%arg1", workflow_to_check)
+        command = command.replace("%vtctlhost", ctl_host)
+        p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        workflow_show2 = (p.communicate())
+        workflow_obj = json.loads(workflow_show2[0])
+    except Exception as error:
+        print(command)
+        print(workflow_obj)
     shards = list(workflow_obj["ShardStatuses"].keys())
     if len(shards_pos) == 0:
         for every_shard in shards:
@@ -103,6 +107,7 @@ def find_diff(actual_list, db_list):
 
 
 def routined_task(workflow_name, host):
+    print("ROUTINED TASK")
     if workflow_name is None:
         command = "vtctlclient --server %host:15999 Workflow user listall"
         command = command.replace("%host", host)
@@ -120,8 +125,16 @@ def routined_task(workflow_name, host):
         workflow_list = workflow_list_str.split(",")
         workflow_name = keyspace+"."+workflow_list[0]
     global i
+    print("ROUTINED TASK 2")
     while True:
-        anyerrors = get_output_from_cli(workflow_name, host)
+        print("ROUTINED TASK 3")
+        print(workflow_name, host)
+        try:
+            anyerrors = get_output_from_cli(workflow_name, host)
+        except Exception as error:
+            print(workflow_name)
+            print(host)
+            print(error.message, error.args)
         if anyerrors:
             pass
         else:
@@ -149,18 +162,22 @@ def find_vtctl():
     return vtctl_host
 
 
-
-
 if __name__ == "__main__":
     # if __name__ == '__main__':
     # workflow_name = args.workflow
     i = 0
+    print("TEST TEST TEST")
     shards_pos = {}
     vtctl_host = find_vtctl()
     workflow_checker_routine = Thread(target=routined_task,
                                       args=[None, vtctl_host])
     workflow_checker_routine.start()
     app.run(host='0.0.0.0', port=5000)
+
+
+@app.route("/status")
+def status():
+    return "OK"
 
 
 @app.route("/metrics")

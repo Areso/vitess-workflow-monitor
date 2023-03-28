@@ -1,8 +1,8 @@
 # PROJECT
 
 ## BUILD
-`sudo docker build --tag aresox/vitess-workflow-monitor:0.1 .`  
+`sudo docker build --tag aresox/vitess_workflow_monitor:0.5 .`  
 OR 
-`sudo docker build --tag /vitess-workflow-monitor:0.1 .`
+`sudo docker build --tag /vitess_workflow_monitor:0.5 .`
 
 ## RUN

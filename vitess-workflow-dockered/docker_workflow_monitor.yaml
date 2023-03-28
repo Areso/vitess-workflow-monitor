@@ -1,15 +1,35 @@
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: vitess-workflow-monitor
+  name: vitess-workflow-mon-depl
 spec:
-  containers:
-  - name: vitess-workflow-monitor
-    image: aresox/vitess_workflow_monitor:0.4
-    # Just spin & wait forever
-    command: [ "/bin/bash", "-c", "--" ]
-    # update repos, update installed things, install things, finally - run endless loop
-    args: [ "apt update",
-            "apt upgrade",
-            "export FLASK_APP=app/dockworkflowmon.py",
-            "python3 app/dockworkflowmon.py" ]
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-app
+  template:
+    metadata:
+      labels:
+        app: test-app
+    spec:
+      containers:
+      - name: test-app
+        image: aresox/vitess_workflow_monitor:0.12
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vitess-workflow-mon-svc
+spec:
+  selector:
+    app: vitess-workflow-mon-depl
+  ports:
+  - port: 6000
+    targetPort: 5000
+  type: LoadBalancer
